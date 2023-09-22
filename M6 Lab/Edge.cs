@@ -1,39 +1,42 @@
-﻿using System.Drawing;
-using System.Windows.Forms;
+﻿using System;
+using System.Drawing;
 
 namespace M6_Lab
 {
-    public class Edge
+    public class Edge : IDrawable
     {
-        int edge_ID;
-        Vertex from_vertex;
-        Vertex to_vertex;
-        Graph graph;
+        public int Id { get; set; }
+        public Vertex From { get; set; }
+        public Vertex To { get; set; }
 
-        public void draw()
+        private double Dx
         {
-            Graphics g;
-            GraphForm graphForm_;
-            graphForm_ = graph.graphForm;
-            g = graphForm_.CreateGraphics();
-            PaintEventArgs e = new PaintEventArgs(g, new Rectangle());
-            e.Graphics.DrawLine(SystemPens.Highlight, from_vertex.draw(), to_vertex.draw());
+            get => To.X - From.X;
         }
-        public int GetID()
+
+        private double Dy
         {
-            return edge_ID;
+            get => To.Y - From.Y;
         }
-        public void Edit(int ID, params Vertex[] v)
+
+        private double Magnitude()
         {
-            edge_ID = ID;
-            if (v[0] != null)
-                from_vertex = v[0];
-            if (v[1] != null)
-                to_vertex = v[1];
+            return Math.Sqrt(Dx * Dx + Dy * Dy);
         }
-        public Edge GetEdge()
+
+        private static readonly double ANGLE_LEN = -15, ANGLE_ROT = Math.PI / 6;
+        public void Draw(Graphics g)
         {
-            return this;
+            double mag = Magnitude();
+            g.DrawLine(Pens.Black, From.ToPoint(), To.ToPoint());
+            for (int i = -1; i < 2; i += 2)
+            {
+                double normX = (Dx / mag) * ANGLE_LEN,
+                    normY = (Dy / mag) * ANGLE_LEN;
+                double rotX = normX * Math.Cos(ANGLE_ROT * i) - normY * Math.Sin(ANGLE_ROT * i),
+                    rotY = normX * Math.Sin(ANGLE_ROT * i) + normY * Math.Cos(ANGLE_ROT * i);
+                g.DrawLine(Pens.Black, To.ToPoint(), new PointF(To.X + (float)rotX, To.Y + (float)rotY));
+            }
         }
     }
 }

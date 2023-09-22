@@ -1,164 +1,209 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using System.Xml.Linq;
+using System.Windows.Forms;
 
 namespace M6_Lab
 {
-    public class Graph : IGraph
+    public class Graph : IGraph, IDrawable
     {
-        int ID;
-        List<Vertex> vertices;
-        List<Edge> edges;
-        public GraphForm graphForm;
+        private static int idCounter = 0;
+        protected int VertexCount { get; set; } = 0;
+        protected int EdgeCount { get; set; }  = 0;
 
-        public Graph()
-        {
-            var ID = DateTime.Now;
-            var str = ID.ToString();
-            string[] strArr = str.Split('/');
-            string[] newArr = strArr[2].Split(':');
-            string[] arr = newArr[0].Split(' ');
-            string[] lastArr = newArr[2].Split(' ');
-            str = arr[0] + arr[1] + newArr[1] + lastArr[0];
-            this.ID = int.Parse(str);
-
-            if (graphForm == null)
-                graphForm = new GraphForm();
-        }
+        public int Id { get; private set; }
+        public IList<Vertex> Vertices { get; private set; } = new List<Vertex>();
+        public IList<Edge> Edges { get; private set; } = new List<Edge>();
 
         public Graph(int ID)
         {
-            this.ID = ID;
+            Id = ID;
         }
 
-        public int getID()
-        {
-            return ID;
+        private Vertex CreateVertex(int x, int y) {
+            return new Vertex()
+            { 
+                Id = VertexCount++,
+                X = x,
+                Y = y,
+            };
         }
 
-        public void SetID()
+        private Edge CreateEdge(Vertex from, Vertex to)
         {
-            ID++;
+            return new Edge()
+            {
+                Id = EdgeCount++,
+                From = from,
+                To = to,
+            };
         }
 
-        public void SetVertices(List<Vertex> list)
+        public Vertex AddVertex(int x, int y)
         {
-            vertices = list;
+            var vertex = CreateVertex(x, y);
+            Vertices.Add(vertex);
+            return vertex;
         }
 
-        public void SetEdges(List<Edge> list)
-        {
-            edges = list;
-        }
-
-        public void add(Vertex vertex)
-        {
-            vertices.Add(vertex);
-        }
-
-        public void add(Edge edge)
-        {
-            edges.Add(edge);
-        }
-
-        public void remove(Vertex vertex)
-        {
-            vertices.Remove(vertex);
-        }
-
-        public void remove(Edge edge)
-        {
-            edges.Remove(edge);
+        public Edge AddEdge(Vertex start, Vertex end)
+        { 
+            var edge = CreateEdge(start, end);
+            Edges.Add(edge);
+            return edge;
         }
 
         public void Print()
         {
-            foreach (Vertex vertex in vertices) { vertex.draw(); }
-            foreach (Edge edge in edges) { edge.draw(); }
+            Program.MainGraph.Invoke(new Action(() => Program.MainGraph.Print(this)));
+        }
+
+        public Vertex FindVertex(int id)
+        {
+            return Vertices.Where(e => e.Id == id).FirstOrDefault();
+        }
+
+        public Edge FindEdge(int id)
+        {
+            return Edges.Where(e => e.Id == id).FirstOrDefault();
         }
 
         public void Revise(int ID)
         {
-            Console.WriteLine("Editing vertex or edge? (v/e)");
+            int inputID;
+            Console.Write("Editing vertex or edge? (v/e): ");
             string input = Console.ReadLine();
-            if (input == "v")
+            if (input == "v" && StdinInt("Enter vertex ID to edit: ", out inputID))
             {
-                Console.WriteLine("Enter vertex ID to edit: ");
-                int inputID = Console.Read();
                 ReviseVertex(inputID);
-                
             }
-            else if (input == "e")
+            else if (input == "e" && StdinInt("Enter edge ID to edit: ", out inputID))
             {
-                Console.WriteLine("Enter edge ID to edit: ");
-                int inputID = Console.Read();
                 ReviseEdge(inputID);
-                
             }
         }
 
-        public Vertex ReviseVertex(int ID)
+        public void ReviseVertex(int ID)
         {
-            Vertex returnVal = null;
-            foreach (Vertex var in vertices)
+            Vertex returnVal = FindVertex(ID);
+            if (returnVal == null)
             {
-                if (var.GetID() == ID)
-                {
-                    Console.WriteLine("Enter new ID, x-coordinate, and y-coordinate values: ");
-                    var one = Console.Read();
-                    var two = Console.Read();
-                    var three = Console.Read();
-                    var.Edit(one, two, three);
-                }
-                else
-                    throw new System.NotImplementedException();
-
-                returnVal = var;
+                Console.WriteLine("No such vertex with ID {0}", ID);
+                return;
             }
-            return returnVal;
+
+            int newID, newX, newY;
+            if (StdinInt("Enter a new ID: ", out newID))
+            {
+                returnVal.Id = newID;
+            }
+            if (StdinInt("Enter a new X: ", out newX))
+            {
+                returnVal.X = newX;
+            }
+            if (StdinInt("Enter a new Y: ", out newY))
+            {
+                returnVal.Y = newY;
+            }
         }
 
         public void ReviseEdge(int ID)
         {
-            foreach (Edge var in edges)
+            Edge edge = FindEdge(ID);
+            if (edge == null)
             {
-                if (var.GetID() == ID)
+                Console.WriteLine("No such edge with ID {0}", ID);
+                return;
+            }
+
+            int newID, newFrom, newTo;
+            if (StdinInt("Enter a new ID: ", out newID))
+            {
+                edge.Id = newID;
+            }
+            if (StdinInt("Enter new start vertex ID: ", out newFrom))
+            {
+                var start = FindVertex(newFrom);
+                if (start == null)
                 {
-                    Console.WriteLine("Enter new ID, from_vertex_ID, and to_vertex_ID values: ");
-                    var one = Console.Read();
-                    var two = Console.Read();
-                    var three = Console.Read();
-                    var.Edit(one, ReviseVertex(two), ReviseVertex(three));                   
+                    Console.WriteLine("No such vertex with ID {0}", newFrom);
                 }
                 else
-                    throw new System.NotImplementedException();
+                {
+                    edge.From = start;
+                }
+            }
+
+            if (StdinInt("Enter new ending vertex ID: ", out newTo))
+            {
+                var end = FindVertex(newTo);
+                if (end == null)
+                {
+                    Console.WriteLine("No such vertex with ID {0}", newFrom);
+                }
+                else
+                {
+                    edge.To = end;
+                }
             }
         }
 
-        public object Clone()
+        public Graph CloneWithId(int id)
         {
-            Graph newGraph = (Graph)this.MemberwiseClone();
-            newGraph.SetID();
-            List<Vertex> list = new List<Vertex>();
-
-            foreach (Vertex var in vertices)
+            var g = new Graph(id)
             {
-                list.Add(var);
-            }
-            newGraph.SetVertices(list);
+                VertexCount = VertexCount,
+                EdgeCount = EdgeCount,
+                Vertices = Vertices.Select(x => (Vertex)x.Clone()).ToList()
+            };
 
-            List<Edge> list_ = new List<Edge>();
-            foreach (Edge var in edges)
+            foreach (Edge e in Edges)
             {
-                list_.Add(var);
+                g.AddEdge((Vertex)e.From.Clone(), (Vertex)e.To.Clone());
             }
-            newGraph.SetEdges(list_);
 
-            return newGraph;
+            return g;
+        }
+
+        private bool StdinInt(string label, out int i)
+        {
+            i = -1;
+            try
+            {
+                while (true)
+                {
+                    Console.Write(label);
+                    string rawInput = Console.ReadLine();
+                    if (string.IsNullOrEmpty(rawInput))
+                    {
+                        break;
+                    }
+                    else if (int.TryParse(rawInput, out i))
+                    {
+                        return true;
+                    }
+                    Console.WriteLine("Invalid input.  Expected int");
+                }
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+        }
+
+        public void Draw(Graphics g)
+        {
+            foreach (Edge e in Edges)
+            { 
+                e.Draw(g);
+            }
+            foreach (Vertex v in Vertices)
+            {
+                v.Draw(g);
+            }
         }
     }
 }

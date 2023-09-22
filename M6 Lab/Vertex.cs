@@ -1,38 +1,51 @@
-﻿using System.Drawing;
-using System.Reflection;
+﻿using System;
+using System.Drawing;
 
 namespace M6_Lab
 {
-    public class Vertex
+    public class Vertex : ICloneable, IDrawable
     {
-        int vertex_ID;
-        int x_coordinate;
-        int y_coordinate;
+        public int Id { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
 
-        public Point draw()
+        public Point ToPoint()
         {
-            Point vertex_point = new Point();
-            vertex_point.X = x_coordinate;
-            vertex_point.Y = y_coordinate;
-
-            return vertex_point;
-        }
-
-        public int GetID()
-        {
-            return vertex_ID;
+            return new Point()
+            {
+                X = X,
+                Y = Y,
+            };
         }
 
         public void Edit(int ID, int x, int y)
         {
-            vertex_ID = ID;
-            x_coordinate = x;
-            y_coordinate = y;
+            Id = ID;
+            X = x;
+            Y = y;
         }
 
-        public Vertex GetVertex()
+        public object Clone()
         {
-            return this;
+            return new Vertex()
+            {
+                Id = Id,
+                X = X,
+                Y = Y,
+            };
+        }
+
+        private static readonly float RADIUS = 2.5f;
+        public void Draw(Graphics g)
+        {
+            var center = new PointF(X - RADIUS, Y - RADIUS);
+            var radius = new SizeF(RADIUS * 2, RADIUS * 2);
+            RectangleF rect = new RectangleF(center, radius);
+            using (Pen p = new Pen(Brushes.Black, 2))
+            {
+                g.DrawEllipse(p, rect);
+            }
+            g.FillEllipse(Brushes.White, rect);
         }
     }
 }

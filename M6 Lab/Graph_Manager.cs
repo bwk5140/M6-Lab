@@ -1,42 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace M6_Lab
 {
     public class Graph_Manager
     {
-        List<Graph> graphs = new List<Graph>();
+        private IList<Graph> graphs = new List<Graph>();
+        private int graphCount = 0;
 
-
-        public object Clone(int ID)
+        public IEnumerable<int> GraphIds 
         {
-            Graph returnVal = null;
-
-            foreach (Graph val in graphs)
-            {
-                if (val.getID() == ID)
-                {
-                    returnVal = (Graph)val.Clone();
-                    break;
-                }
-            }
-            return returnVal;
+            get => graphs.Select(x => x.Id);
         }
 
-        public Graph getGraph(int ID)
+        public Graph CreateGraph()
         {
-            Graph returnVal = null;
+            return new Graph(graphCount++);
+        }
 
-            foreach (Graph val in graphs)
-            {
-                if (val.getID() == ID)
-                {
-                    returnVal = val;
-                    break;
-                }
-            }
-            return returnVal;
+        public Graph Clone(int ID)
+        {
+            return GetGraph(ID)?.CloneWithId(graphCount++);
+        }
+
+        public Graph GetGraph(int ID)
+        {
+            return graphs.Where(e => e.Id == ID).FirstOrDefault();
         }
     }
-
 }
