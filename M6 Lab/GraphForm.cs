@@ -36,5 +36,10 @@ namespace M6_Lab
             Refresh();
             Focus();
         }
+
+        private void GraphForm_Shown(object sender, System.EventArgs e)
+        {
+            Hide();
+        }
     }
 }

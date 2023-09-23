@@ -16,7 +16,6 @@ namespace M6_Lab
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             _instance = new GraphForm();
-            _instance.Hide();
             new Thread(ConsoleMain).Start();
             Application.Run(_instance);
         }
@@ -25,7 +24,8 @@ namespace M6_Lab
         {
             Graph_Manager manager = new Graph_Manager();
             MakeGraphs(manager);
-
+            GraphCLI cli = new GraphCLI(manager);
+            cli.RunLoop();
         }
 
         private static void MakeGraphs(Graph_Manager manager)

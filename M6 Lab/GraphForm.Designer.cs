@@ -38,6 +38,7 @@
             this.Name = "GraphForm";
             this.Text = "GraphForm";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GraphForm_FormClosing);
+            this.Shown += new System.EventHandler(this.GraphForm_Shown);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.GraphForm_Paint);
             this.ResumeLayout(false);
 

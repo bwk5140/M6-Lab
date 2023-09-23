@@ -16,12 +16,21 @@ namespace M6_Lab
 
         public Graph CreateGraph()
         {
-            return new Graph(graphCount++);
+            var graph = new Graph(graphCount++);
+            graphs.Add(graph);
+            return graph;
         }
 
         public Graph Clone(int ID)
         {
-            return GetGraph(ID)?.CloneWithId(graphCount++);
+            var graph = GetGraph(ID);
+            if (graph != null)
+            {
+                var copy = graph.CloneWithId(graphCount++);
+                graphs.Add(copy);
+                return copy;
+            }
+            return null;
         }
 
         public Graph GetGraph(int ID)
