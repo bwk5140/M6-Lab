@@ -7,7 +7,6 @@ namespace M6_Lab
     public class Graph_Manager
     {
         private IList<Graph> graphs = new List<Graph>();
-        private int graphCount = 0;
 
         public IEnumerable<int> GraphIds 
         {
@@ -16,7 +15,7 @@ namespace M6_Lab
 
         public Graph CreateGraph()
         {
-            var graph = new Graph(graphCount++);
+            var graph = new Graph();
             graphs.Add(graph);
             return graph;
         }
@@ -26,7 +25,7 @@ namespace M6_Lab
             var graph = GetGraph(ID);
             if (graph != null)
             {
-                var copy = graph.CloneWithId(graphCount++);
+                var copy = (Graph)graph.Clone();
                 graphs.Add(copy);
                 return copy;
             }

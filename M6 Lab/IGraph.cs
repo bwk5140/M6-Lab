@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace M6_Lab
 {
-    public interface IGraph : IDrawable
+    public interface IGraph : IDrawable, ICloneable
     {
         void Print();
         void Revise(int ID);

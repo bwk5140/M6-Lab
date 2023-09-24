@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace M6_Lab
 {
-    public class Graph : IGraph, IDrawable
+    public class Graph : IGraph
     {
         private static int idCounter = 0;
         protected int VertexCount { get; set; } = 0;
@@ -17,9 +17,9 @@ namespace M6_Lab
         public IList<Vertex> Vertices { get; private set; } = new List<Vertex>();
         public IList<Edge> Edges { get; private set; } = new List<Edge>();
 
-        public Graph(int ID)
+        public Graph()
         {
-            Id = ID;
+            Id = idCounter++;
         }
 
         private Vertex CreateVertex(int x, int y) {
@@ -150,23 +150,6 @@ namespace M6_Lab
             }
         }
 
-        public Graph CloneWithId(int id)
-        {
-            var g = new Graph(id)
-            {
-                VertexCount = VertexCount,
-                EdgeCount = EdgeCount,
-                Vertices = Vertices.Select(x => (Vertex)x.Clone()).ToList()
-            };
-
-            foreach (Edge e in Edges)
-            {
-                g.AddEdge((Vertex)e.From.Clone(), (Vertex)e.To.Clone());
-            }
-
-            return g;
-        }
-
         private bool StdinInt(string label, out int i)
         {
             i = -1;
@@ -204,6 +187,23 @@ namespace M6_Lab
             {
                 v.Draw(g);
             }
+        }
+
+        public object Clone()
+        {
+            var g = new Graph()
+            {
+                VertexCount = VertexCount,
+                EdgeCount = EdgeCount,
+                Vertices = Vertices.Select(x => (Vertex)x.Clone()).ToList()
+            };
+
+            foreach (Edge e in Edges)
+            {
+                g.AddEdge((Vertex)e.From.Clone(), (Vertex)e.To.Clone());
+            }
+
+            return g;
         }
     }
 }
